@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "kaboom-playground": {
+    "wedding-invitation": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -20,7 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/kaboom-playground",
+            "outputPath": "dist/wedding-invitation",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -72,10 +72,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "kaboom-playground:build:production"
+              "browserTarget": "wedding-invitation:build:production"
             },
             "development": {
-              "browserTarget": "kaboom-playground:build:development"
+              "browserTarget": "wedding-invitation:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -83,7 +83,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "kaboom-playground:build"
+            "browserTarget": "wedding-invitation:build"
           }
         },
         "test": {
@@ -107,5 +107,5 @@
       }
     }
   },
-  "defaultProject": "kaboom-playground"
+  "defaultProject": "wedding-invitation"
 }

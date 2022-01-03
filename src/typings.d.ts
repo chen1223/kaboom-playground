@@ -36,3 +36,5 @@ declare const fixed: any;
 declare const opacity: any;
 declare const isClicked: any;
 declare const isTouch: any;
+declare const color: any;
+declare const onClick: any;

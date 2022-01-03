@@ -1,14 +1,12 @@
 declare const origin: any;
 import { Subject } from 'rxjs';
+import { SurveyAnser } from '../game-board/game-board.component';
 import { addKey, loadArrowSprites } from './arrow';
 
 const JUMP_FORCE = 600;
 const BIG_JUMP_FORCE = 700;
 let CURRENT_JUMP_FORCE = JUMP_FORCE;
-const BASE_SCALE = 2;
-const FALL_DEATH = 650;
-
-const keyTouch$ = new Subject<void>();
+const FALL_DEATH = 900;
 
 function healthStatus() {
   return {
@@ -156,7 +154,7 @@ function determineKey(touchEvent: any, arrowUp: any, arrowDown: any, arrowRight:
   return null;
 }
 
-export function addCharacter(initBig: boolean, initX: number, initY: number, gameBoard: any, scoreLabel: any) {
+export function addCharacter(endGameSignal$: Subject<void>, currentLevel: string, initBig: boolean, initX: number, initY: number, gameBoard: any, scoreLabel: any, surveyAnswer: SurveyAnser, labelOptions?: any) {
   const SPEED = 360;
   let isBig = initBig;
   let canSmash = true;
@@ -165,6 +163,9 @@ export function addCharacter(initBig: boolean, initX: number, initY: number, gam
   let arrowDown: any;
   let arrowRight: any;
   let arrowLeft: any;
+
+  const onMobileLandscape = window.matchMedia('(orientation: landscape)').matches && window.innerHeight < 750;
+
   if (isTouch()) {
     arrowUp = addKey('arrow-up', width() - 70, height() - 100);
     arrowDown = addKey('arrow-down', 95, height() - 70);
@@ -224,12 +225,10 @@ export function addCharacter(initBig: boolean, initX: number, initY: number, gam
     healthStatus(),
     'mario'
   ]);
-
   // Initial animation
   mario.play('idle--sm');
   mario.action(() => {
     camPos(mario.pos);
-    scoreLabel.moveTo(mario.pos.x + 750, mario.pos.y - 300)
     const left = isTouch() ? keyIsDown('left') || arrowLeft.isPressed : keyIsDown('left');
     const right = isTouch() ? keyIsDown('right') || arrowRight.isPressed : keyIsDown('right');
     const up = isTouch() ? keyIsDown('up') || arrowUp.isPressed : keyIsDown('up');
@@ -242,7 +241,7 @@ export function addCharacter(initBig: boolean, initX: number, initY: number, gam
 
     // Detect fall
     if (mario.pos.y >= FALL_DEATH) {
-      go('game', { level: 'level1', score: 0, isBig: false });
+      go('game', { level: 'q1', score: 0, isBig: false });
     }
 
     // Define sprite size
@@ -337,6 +336,30 @@ export function addCharacter(initBig: boolean, initX: number, initY: number, gam
       destroy(obj);
       // Spawn an unboxed sprite at the original position
       gameBoard.spawn('u', obj.gridPos.sub(0, 0));
+    } else if (obj.is('add-attendee')) {
+      // Increase attendee by 1
+      surveyAnswer.q4.a1 = surveyAnswer.q4.a1 < 5 ? surveyAnswer.q4.a1 += 1 : surveyAnswer.q4.a1;
+      labelOptions.attendeeLabel.text = `${surveyAnswer.q4.a1}`;
+    } else if (obj.is('minus-attendee')) {
+      // Decrease attendee by 1
+      surveyAnswer.q4.a1 = surveyAnswer.q4.a1 > 0 ?  surveyAnswer.q4.a1 -= 1 : 0;
+      labelOptions.attendeeLabel.text = `${surveyAnswer.q4.a1}`;
+    } else if (obj.is('add-vegan')) {
+      // Increase vegan by 1
+      surveyAnswer.q4.a2 = surveyAnswer.q4.a2 < surveyAnswer.q4.a1 ? surveyAnswer.q4.a2 += 1 : surveyAnswer.q4.a2;
+      labelOptions.vegeLabel.text = `${surveyAnswer.q4.a2}`;
+    } else if (obj.is('minus-vegan')) {
+      // Decrease vegan by 1
+      surveyAnswer.q4.a2 = surveyAnswer.q4.a2 > 0 ?  surveyAnswer.q4.a2 -= 1 : 0;
+      labelOptions.vegeLabel.text = `${surveyAnswer.q4.a2}`;
+    } else if (obj.is('add-chair')) {
+      // Increase children chair by 1
+      surveyAnswer.q4.a3 = surveyAnswer.q4.a3 < (surveyAnswer.q4.a1 - 1) ? surveyAnswer.q4.a3 += 1 : surveyAnswer.q4.a3;
+      labelOptions.chairLabel.text = `${surveyAnswer.q4.a3}`;
+    } else if (obj.is('minus-chair')) {
+      // Decrease children chair by 1
+      surveyAnswer.q4.a3 = surveyAnswer.q4.a3 > 0 ?  surveyAnswer.q4.a3 -= 1 : 0;
+      labelOptions.chairLabel.text = `${surveyAnswer.q4.a3}`;
     }
   });
 
@@ -426,9 +449,71 @@ export function addCharacter(initBig: boolean, initX: number, initY: number, gam
   });
 
   // Go into Pipe
-  mario.onCollide('pipe', () => {
+  mario.onCollide('pipe', (pipe: any) => {
     keyPress('down', () => {
-      go('game', { level: 'level2', score: scoreLabel.value, isBig });
+      switch (currentLevel) {
+        case 'q1': {
+          // Option A
+          if (pipe.is('pipe-a')) {
+            surveyAnswer.q1 = 'A';
+          } else {
+            // Option B
+            surveyAnswer.q1 = 'B';
+          }
+          console.log('survey answers:', surveyAnswer);
+          go('game', { level: 'q2', score: scoreLabel.value, isBig });
+          break;
+        }
+        case 'q2': {
+          // Option A
+          if (pipe.is('pipe-a')) {
+            surveyAnswer.q2 = 'A';
+          } else if (pipe.is('pipe-b')) {
+            // Option B
+            surveyAnswer.q2 = 'B';
+          } else if (pipe.is('pipe-c')) {
+            // Option C
+            surveyAnswer.q2 = 'C';
+          } else {
+            // Option D
+            surveyAnswer.q2 = 'D';
+          }
+          console.log('survey answers:', surveyAnswer);
+          go('game', { level: 'q3', score: scoreLabel.value, isBig });
+          break;
+        }
+        case 'q3': {
+          // Option A
+          if (pipe.is('pipe-a')) {
+            surveyAnswer.q3 = 'A';
+          } else {
+            // Option B
+            surveyAnswer.q3 = 'B';
+          }
+          console.log('survey answers:', surveyAnswer);
+          endGameSignal$.next();
+          break;
+        }
+        case 'q4': {
+          console.log('survey answers:', surveyAnswer);
+          go('game', { level: 'q5', score: scoreLabel.value, isBig });
+          break;
+        }
+        case 'q5': {
+          // Option A
+          if (pipe.is('pipe-a')) {
+            surveyAnswer.q5 = 'A';
+          } else if (pipe.is('pipe-b')) {
+            // Option B
+            surveyAnswer.q5 = 'B';
+          } else if (pipe.is('pipe-c')) {
+            // Option C
+            surveyAnswer.q5  = 'C';
+          }
+          console.log('survey answers:', surveyAnswer);
+          endGameSignal$.next();
+        }
+      }
     });
     const listener = document.addEventListener('touchstart', () => {
       setTimeout(() => {

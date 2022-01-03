@@ -26,7 +26,7 @@ export function loadEvilMushroom(): void {
 export function evilShroom() {
   return {
     id: "evilShroom",
-    require: ["pos", "area", "sprite", "evilShroomWalk"],
+    require: ["pos", "area", "sprite", "shroomWalk"],
     isAlive: true,
     update() {
       const currAnim = (this as any).curAnim();
@@ -36,7 +36,7 @@ export function evilShroom() {
     },
     smash() {
       (this as any).isAlive = false;
-      (this as any).unuse("evilShroomWalk");
+      (this as any).unuse("shroomWalk");
       (this as any).stop();
       (this as any).frame = 2;
       (this as any).area.width = 16;
@@ -45,7 +45,7 @@ export function evilShroom() {
     },
     bumped() {
       (this as any).isAlive = false;
-      (this as any).unuse("evilShroomWalk");
+      (this as any).unuse("shroomWalk");
       (this as any).stop();
       (this as any).jump(BUMPED_FORCE);
       (this as any).use(lifespan(0.5, { fade: 0.1 }));
@@ -53,10 +53,10 @@ export function evilShroom() {
   }
 }
 
-export function evilShroomWalk(distance = 100, speed = 50, dir = -1) {
+export function shroomWalk(distance = 100, speed = 50, dir = -1) {
 
   return {
-    id: "evilShroomWalk",
+    id: "shroomWalk",
     require: ["pos", "area",],
     startingPos: vec2(0, 0),
     add() {
@@ -65,7 +65,6 @@ export function evilShroomWalk(distance = 100, speed = 50, dir = -1) {
       (this as any).on("collide", (obj: any, side: any) => {
         if (side.isLeft() || side.isRight()) {
           dir = -dir;
-          console.log('mush room collide', this)
         }
       });
     },
